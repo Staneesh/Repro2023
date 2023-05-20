@@ -25,4 +25,8 @@ In our work we relied heavily on Git:
 
 - [ ] Loading the data
 - [ ] Importing Python packages relevant for data analysis
-- [ ]
+- [ ] Fitting the model using ARIMA
+- [ ] Forecasting 
+- [ ] Plotting forecast results
+- [ ] Documenting code
+- [ ] **Were the results replicated?**
