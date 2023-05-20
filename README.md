@@ -20,3 +20,9 @@ In our work we relied heavily on Git:
 * We used the [Issues](https://github.com/Staneesh/Repro2023/issues) tab to decide on a project topic and its scope.
 * We used the `main` branch as the project master.
 * The `main` branch was protected from direct pushes - approval from all team members was required for every pull request, which forced all team members to communicate and comment.  
+
+## Features / Milestones
+
+- [ ] Loading the data
+- [ ] Importing Python packages relevant for data analysis
+- [ ]
