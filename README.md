@@ -30,3 +30,13 @@ In our work we relied heavily on Git:
 - [ ] Plotting forecast results
 - [ ] Documenting code
 - [ ] **Were the results replicated?**
+
+## Running the Code
+
+Please make sure you have all usual dependencies installed on your system. Most importantly `python`, `pip` and `ipykernel`. If you're using _Visual Studio Code_ for development, you should be prompted to install them automatically. Next, follow this process:
+
+1. Create the virtual environment: `python -m venv venv`
+2. Enter `venv`: `source venv/bin/activate` on Linux or `venv\Scripts\activate.bat` on Windows
+3. Upgrade you `pip`: `pip install --upgrade pip`
+4. Install dependencies from the requirements file: `pip install -r requirements.txt`
+5. You're good to open the Jupyter Notebook IDE of your choice. Be sure to use select Python version from inside the `venv` you just created when prompted by `ipykernel` package.
