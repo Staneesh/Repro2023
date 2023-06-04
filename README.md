@@ -23,6 +23,8 @@ In our work we relied heavily on Git:
 
 ## Features / Milestones
 
+The main list of tasks that we wanted to accomplish is outlined below. Two main questions that we wanted to answer are marked in **bold**.
+
 - [ ] Loading the data
 - [ ] Importing Python packages relevant for data analysis
 - [ ] Fitting the model using ARIMA
@@ -30,6 +32,8 @@ In our work we relied heavily on Git:
 - [ ] Plotting forecast results
 - [ ] Documenting code
 - [ ] **Were the results replicated?**
+- [ ] Alternative model implementation + comparisons
+- [ ] **Were we able to improve the model from the paper?**
 
 ## Running the Code
 
