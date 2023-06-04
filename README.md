@@ -17,11 +17,13 @@ Most important development tools used in the process are listed below:
 
 In our work we relied heavily on Git:
 
-* We used the [Issues](https://github.com/Staneesh/Repro2023/issues) tab to decide on a project topic and its scope.
+* We used the [Issues](https://github.com/Staneesh/Repro2023/issues?q=is%3Aissue) tab to decide on a project topic and its scope.
 * We used the `main` branch as the project master.
 * The `main` branch was protected from direct pushes - approval from all team members was required for every pull request, which forced all team members to communicate and comment.  
 
 ## Features / Milestones
+
+The main list of tasks that we wanted to accomplish is outlined below. Two main questions that we wanted to answer are marked in **bold**.
 
 - [ ] Loading the data
 - [ ] Importing Python packages relevant for data analysis
@@ -30,6 +32,8 @@ In our work we relied heavily on Git:
 - [ ] Plotting forecast results
 - [ ] Documenting code
 - [ ] **Were the results replicated?**
+- [ ] Alternative model implementation + comparisons
+- [ ] **Were we able to improve the model from the paper?**
 
 ## Running the Code
 
