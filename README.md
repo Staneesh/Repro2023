@@ -13,6 +13,10 @@ Most important development tools used in the process are listed below:
 * We used [Python](https://www.python.org/) as our language of choice.
 * Analysis was performed in a [Jupyter Notebook](https://jupyter.org/). 
 
+## Reproducibility
+
+We set up a custom GitHub action that runs on every pull request to the `main` branch. It runs the sequence of operations described in section `Running the Code` of this `README`. Using this action we were sure, that no dependencies may be missing from the `requirements` set, and that the notebook produces a valid `html` file correctly and without errors on the latest Ubuntu linux release. 
+
 ## Collaboration
 
 In our work we relied heavily on Git:
@@ -25,12 +29,12 @@ In our work we relied heavily on Git:
 
 The main list of tasks that we wanted to accomplish is outlined below. Two main questions that we wanted to answer are marked in **bold**.
 
-- [ ] Loading the data
-- [ ] Importing Python packages relevant for data analysis
-- [ ] Fitting the model using ARIMA
-- [ ] Forecasting 
-- [ ] Plotting forecast results
-- [ ] Documenting code
+- [X] Loading the data
+- [X] Importing Python packages relevant for data analysis
+- [X] Fitting the model using ARIMA
+- [X] Forecasting 
+- [X] Plotting forecast results
+- [X] Documenting code
 - [ ] **Were the results replicated?**
 - [ ] Alternative model implementation + comparisons
 - [ ] **Were we able to improve the model from the paper?**
