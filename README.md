@@ -17,6 +17,8 @@ Most important development tools used in the process are listed below:
 
 We set up a custom GitHub action that runs on every pull request to the `main` branch. It runs the sequence of operations described in section `Running the Code` of this `README`. Using this action we were sure, that no dependencies may be missing from the `requirements` set, and that the notebook produces a valid `html` file correctly and without errors on the latest Ubuntu linux release. 
 
+[![notebook](https://github.com/Staneesh/Repro2023/actions/workflows/notebook.yml/badge.svg?branch=main)](https://github.com/Staneesh/Repro2023/actions/workflows/notebook.yml)
+
 ## Collaboration
 
 In our work we relied heavily on Git:

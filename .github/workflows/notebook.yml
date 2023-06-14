@@ -4,6 +4,8 @@ name: notebook
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
 
@@ -23,11 +25,11 @@ jobs:
           source venv/bin/activate
 
       - name: Upgrade `pip`
-      - run: pip install --upgrade pip
+        run: pip install --upgrade pip
 
       - name: Install `requirements`
-      - run: pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Check Reproducibility
-      - run: jupyter nbconvert --execute main.ipynb --to html
+        run: jupyter nbconvert --execute main.ipynb --to html
 
