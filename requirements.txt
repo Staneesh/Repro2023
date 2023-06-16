@@ -54,6 +54,7 @@ pytz==2023.3
 pyzmq==25.1.0
 scipy==1.10.1
 six==1.16.0
+sklearn==1.0.1
 soupsieve==2.4.1
 stack-data==0.6.2
 statsmodels==0.14.0
