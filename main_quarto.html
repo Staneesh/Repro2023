@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.361">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Adam Foster, Maciej Staniszewski, Illia Baranochnikov">
+
+<title>Reproducible Research Project: Air Passengers Occupancy Prediction</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="main_quarto_files/libs/clipboard/clipboard.min.js"></script>
+<script src="main_quarto_files/libs/quarto-html/quarto.js"></script>
+<script src="main_quarto_files/libs/quarto-html/popper.min.js"></script>
+<script src="main_quarto_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="main_quarto_files/libs/quarto-html/anchor.min.js"></script>
+<link href="main_quarto_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="main_quarto_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="main_quarto_files/libs/quarto-html/quarto-syntax-highlighting-dark.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<script src="main_quarto_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="main_quarto_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="main_quarto_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="main_quarto_files/libs/bootstrap/bootstrap-dark.min.css" rel="prefetch" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<style>html{ scroll-behavior: smooth; }</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body>
+
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Reproducible Research Project: Air Passengers Occupancy Prediction</h1>
+                      </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Adam Foster, Maciej Staniszewski, Illia Baranochnikov </p>
+            </div>
+    </div>
+      
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+</div>
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+<nav id="TOC" role="doc-toc">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#importing-libraries" id="toc-importing-libraries">Importing Libraries</a></li>
+  <li><a href="#loading-the-dataset" id="toc-loading-the-dataset">Loading the Dataset</a></li>
+  <li><a href="#time-series-modelling---arima" id="toc-time-series-modelling---arima">Time Series Modelling - ARIMA</a>
+  <ul>
+  <li><a href="#visual-inspection" id="toc-visual-inspection">Visual Inspection</a></li>
+  <li><a href="#train-test-split" id="toc-train-test-split">Train-Test Split</a></li>
+  <li><a href="#stationarity" id="toc-stationarity">Stationarity</a></li>
+  <li><a href="#pacf-and-acf" id="toc-pacf-and-acf">PACF and ACF</a></li>
+  <li><a href="#arima-model" id="toc-arima-model">ARIMA Model</a></li>
+  <li><a href="#sarima" id="toc-sarima">SARIMA</a></li>
+  </ul></li>
+  </ul>
+</nav>
+<section id="importing-libraries" class="level1">
+<h1>Importing Libraries</h1>
+<div class="cell" data-execution_count="1">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.api <span class="im">as</span> sm</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> datetime</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> norm</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> statsmodels.tsa.arima.model <span class="im">import</span> ARIMA</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> statsmodels.tsa.seasonal <span class="im">import</span> seasonal_decompose</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> mean_squared_error</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="loading-the-dataset" class="level1">
+<h1>Loading the Dataset</h1>
+<p>Air passenger data is downloaded to the <code>/data</code> subdirectory of the root project folder. We will use <code>pandas</code> to create a data frame with this data.</p>
+<div class="cell" data-execution_count="2">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> pd.read_csv(<span class="st">'data/AirPassengers.xls'</span>, index_col<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>data.columns <span class="op">=</span> [ <span class="st">'Count'</span> ] <span class="co"># Renaming `#Passengers` -&gt; `Count` for convenience</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>data.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Count</th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">Month</th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1949-01</td>
+<td>112</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1949-02</td>
+<td>118</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1949-03</td>
+<td>132</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1949-04</td>
+<td>129</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1949-05</td>
+<td>121</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="3">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>data.tail()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Count</th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">Month</th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1960-08</td>
+<td>606</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1960-09</td>
+<td>508</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1960-10</td>
+<td>461</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1960-11</td>
+<td>390</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1960-12</td>
+<td>432</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>We see that the dataset looks relatively simple. It contains monthly data about the number of air passengers from 1949 to 1960. Let’s see more detailed description of the data using <code>pandas.describe()</code>:</p>
+<div class="cell" data-execution_count="4">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>data.describe()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">count</td>
+<td>144.000000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">mean</td>
+<td>280.298611</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">std</td>
+<td>119.966317</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">min</td>
+<td>104.000000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">25%</td>
+<td>180.000000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">50%</td>
+<td>265.500000</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">75%</td>
+<td>360.500000</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">max</td>
+<td>622.000000</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Having taken a better look we can note down a couple observations: - There are 144 observations - The distribution is centered around 280 - The distribution is skewed towards larger values jugding from <strong>quartiles</strong> and <strong>min-max</strong> range</p>
+<p>Let’s import libraries required for performing the analysis and forecasting outlined in the paper.</p>
+</section>
+<section id="time-series-modelling---arima" class="level1">
+<h1>Time Series Modelling - ARIMA</h1>
+<p>We will fit a simple <strong>A</strong>uto<strong>R</strong>egressive <strong>I</strong>ntegrate <strong>M</strong>oving <strong>A</strong>verage, or <strong>ARIMA</strong>, model to our time series of air passengers.</p>
+<p>First, we should plot the time series and it’s first difference, as is customary:</p>
+<div class="cell" data-execution_count="5">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># First difference is computed by diffing values with shifted values. We then fill NAs with 0s to</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># handle the first difference.</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>data[ <span class="st">'Diff'</span> ] <span class="op">=</span> (data[ <span class="st">'Count'</span> ] <span class="op">-</span> data[ <span class="st">'Count'</span> ].shift(<span class="dv">1</span>)).fillna(<span class="dv">0</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>data.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Count</th>
+<th data-quarto-table-cell-role="th">Diff</th>
+</tr>
+<tr class="odd">
+<th data-quarto-table-cell-role="th">Month</th>
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th"></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1949-01</td>
+<td>112</td>
+<td>0.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1949-02</td>
+<td>118</td>
+<td>6.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1949-03</td>
+<td>132</td>
+<td>14.0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1949-04</td>
+<td>129</td>
+<td>-3.0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">1949-05</td>
+<td>121</td>
+<td>-8.0</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="6">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>data.plot(figsize<span class="op">=</span>(<span class="dv">19</span>, <span class="dv">10</span>), subplots<span class="op">=</span><span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<pre><code>array([&lt;Axes: xlabel='Month'&gt;, &lt;Axes: xlabel='Month'&gt;], dtype=object)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="main_quarto_files/figure-html/cell-7-output-2.png" width="1479" height="799"></p>
+</div>
+</div>
+<section id="visual-inspection" class="level2">
+<h2 class="anchored" data-anchor-id="visual-inspection">Visual Inspection</h2>
+<p>At the first glance we see that the data does not contain missing values. It’s a discrete series, because we sample our values monthly. It appears seasonal, which is in line with the meaning of the values in the data frame - they reflect the number of air passengers, so it’s natural that we observe more passengers during, for example, summer.</p>
+</section>
+<section id="train-test-split" class="level2">
+<h2 class="anchored" data-anchor-id="train-test-split">Train-Test Split</h2>
+<p>There is no clear mention of the approach used to split the data into training and test sets. Judging by the final forecast visualisation, 1958 appeared to be the cutoff point between training and test sets. After this point there was an additional ARIMA curve until the end of the series used to forecast air passenger volumes in comparison with the actual time series.</p>
+<p>We will therefore set 1949-1957 as the training set and 1958-1960 as the test set.</p>
+<div class="cell" data-execution_count="7">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data.reset_index()</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>data[<span class="st">'Date'</span>] <span class="op">=</span> data.<span class="bu">apply</span>(<span class="kw">lambda</span> x: datetime.datetime.strptime(x[<span class="st">'Month'</span>], <span class="st">'%Y-%m'</span>), axis <span class="op">=</span> <span class="dv">1</span>).dt.date</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>data <span class="op">=</span> data.drop([<span class="st">'Month'</span>], axis <span class="op">=</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="8">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>train <span class="op">=</span> data.loc[data[<span class="st">'Date'</span>] <span class="op">&lt;</span> datetime.date(<span class="dv">1958</span>, <span class="dv">1</span>, <span class="dv">1</span>)]</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>train.tail()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Count</th>
+<th data-quarto-table-cell-role="th">Diff</th>
+<th data-quarto-table-cell-role="th">Date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">103</td>
+<td>467</td>
+<td>2.0</td>
+<td>1957-08-01</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">104</td>
+<td>404</td>
+<td>-63.0</td>
+<td>1957-09-01</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">105</td>
+<td>347</td>
+<td>-57.0</td>
+<td>1957-10-01</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">106</td>
+<td>305</td>
+<td>-42.0</td>
+<td>1957-11-01</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">107</td>
+<td>336</td>
+<td>31.0</td>
+<td>1957-12-01</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="9">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>test <span class="op">=</span> data.loc[data[<span class="st">'Date'</span>] <span class="op">&gt;=</span> datetime.date(<span class="dv">1958</span>, <span class="dv">1</span>, <span class="dv">1</span>)]</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>test.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Count</th>
+<th data-quarto-table-cell-role="th">Diff</th>
+<th data-quarto-table-cell-role="th">Date</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">108</td>
+<td>340</td>
+<td>4.0</td>
+<td>1958-01-01</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">109</td>
+<td>318</td>
+<td>-22.0</td>
+<td>1958-02-01</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">110</td>
+<td>362</td>
+<td>44.0</td>
+<td>1958-03-01</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">111</td>
+<td>348</td>
+<td>-14.0</td>
+<td>1958-04-01</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">112</td>
+<td>363</td>
+<td>15.0</td>
+<td>1958-05-01</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="stationarity" class="level2">
+<h2 class="anchored" data-anchor-id="stationarity">Stationarity</h2>
+<p>We should check if the series is stationary. As per visual inspection we see that it should not be. We will use the <ins><strong>A</strong>ugumented <strong>D</strong>ickey-<strong>F</strong>uller</ins> (<strong>ADF</strong>) test (<a href="https://en.wikipedia.org/wiki/Augmented_Dickey%E2%80%93Fuller_test"><em>Wikipedia</em> link</a>), which is a part of the <code>statsmodels</code> library.</p>
+<div class="cell" data-execution_count="10">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Small helper function for performing the DF test on a time series. </span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ADF(series):</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    (adf_test, adf_p) <span class="op">=</span> sm.tsa.stattools.adfuller(series)[:<span class="dv">2</span>]</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"ADF Test Statistic = </span><span class="sc">{</span>adf_test<span class="sc">}</span><span class="ss">, p-value = </span><span class="sc">{</span>adf_p<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>ADF(train[ <span class="st">'Count'</span> ])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>ADF Test Statistic = 1.002586510133105, p-value = 0.9942931644042374</code></pre>
+</div>
+</div>
+<p>Because the <em>p-value</em> is outside the critical region, we <strong>fail to reject the null</strong> hypothesis about the stationarity of the series. This is in line with our initial expectations. We will assume that the series is non-stationary.</p>
+<p>The authors of the paper arrive at a different test statistic.</p>
+<p>They actually obtain the following test statistic which assumes the use of the entire time series (train + test).</p>
+<div class="cell" data-execution_count="11">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Small helper function for performing the DF test on a time series. </span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> ADF(series):</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    (adf_test, adf_p) <span class="op">=</span> sm.tsa.stattools.adfuller(series)[:<span class="dv">2</span>]</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"ADF Test Statistic = </span><span class="sc">{</span>adf_test<span class="sc">}</span><span class="ss">, p-value = </span><span class="sc">{</span>adf_p<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>ADF(data[ <span class="st">'Count'</span> ])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>ADF Test Statistic = 0.8153688792060441, p-value = 0.9918802434376409</code></pre>
+</div>
+</div>
+<p>For completeness, let’s also check the stationarity of the series of first differences:</p>
+<div class="cell" data-execution_count="12">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>ADF(train[ <span class="st">'Diff'</span> ])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>ADF Test Statistic = -2.349322039808021, p-value = 0.15655343854659193</code></pre>
+</div>
+</div>
+<p>The p-value is still high enough for the null hypothesis not to be rejected at 10% confidence level.</p>
+<div class="cell" data-execution_count="13">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>ADF(data[ <span class="st">'Diff'</span> ])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>ADF Test Statistic = -2.8891860694712648, p-value = 0.04662003920675343</code></pre>
+</div>
+</div>
+<p>Extending the test to the entire series again, we <strong>reject the null</strong> at the 95% confidence level, better than the 0.07 p-value reported by the authors. This indicates the first differences are stationary and the the underlying series is I(1).</p>
+<p>The authors of the paper describe that a <em>logarithmic transformation</em> is another useful option in removing the trend and fluctuations in the series. Calculating the first difference was sufficient though.</p>
+<p>The steps that were taken by the authors include differencing and removing seasonality. They <strong>did not</strong> mention how was the seasonality removed - we can only guess here and perform our own estimations.</p>
+<p>With the process being classified as I(1), the authors proceeded to determine the order of AR and MA models for the complete ARIMA model using partial autocorrelation functions (PACF) and autocorrelation functions (ACF), respectively.</p>
+</section>
+<section id="pacf-and-acf" class="level2">
+<h2 class="anchored" data-anchor-id="pacf-and-acf">PACF and ACF</h2>
+<p>Running PACF and ACF on the first differences on both training and overall datasets is perfomed and depicted below. The shapes of both PACF and ACF curves follow those produced by the authors with a closer match for the training set. A similar set of lags are statistically significant, as those in the paper.</p>
+<div class="cell" data-execution_count="14">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> autocorr(data_input, func_type, ci):</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(func_type <span class="op">==</span> <span class="st">'PACF'</span>):</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>        func_data <span class="op">=</span> sm.tsa.stattools.pacf(data_input)</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">elif</span>(func_type <span class="op">==</span> <span class="st">'ACF'</span>):</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>        func_data <span class="op">=</span> sm.tsa.stattools.acf(data_input)</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> <span class="bu">len</span>(data_input)</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    norminv <span class="op">=</span> norm.ppf(ci <span class="op">+</span> (<span class="dv">1</span> <span class="op">-</span> ci) <span class="op">/</span> <span class="dv">2</span>)</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    bound_upper <span class="op">=</span> norminv <span class="op">/</span> t<span class="op">**</span><span class="fl">0.5</span></span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>    bound_lower <span class="op">=</span> <span class="op">-</span> norminv <span class="op">/</span> t<span class="op">**</span><span class="fl">0.5</span></span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>    curve_bound_upper <span class="op">=</span> [bound_upper <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>,<span class="bu">len</span>(func_data))]</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>    curve_bound_lower <span class="op">=</span> [bound_lower <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>,<span class="bu">len</span>(func_data))]</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    plt.plot(func_data, label <span class="op">=</span> func_type)</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>    plt.plot(curve_bound_upper, <span class="st">'k--'</span>, label <span class="op">=</span> <span class="st">'Upper Bound'</span>)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>    plt.plot(curve_bound_lower, <span class="st">'k--'</span>, label <span class="op">=</span> <span class="st">'Lower Bound'</span>)</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    plt.title(func_type)</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="15">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>autocorr(data[ <span class="st">'Diff'</span> ], <span class="st">'PACF'</span>, <span class="fl">0.95</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="main_quarto_files/figure-html/cell-16-output-1.png" width="590" height="431"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="16">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>autocorr(train[ <span class="st">'Diff'</span> ], <span class="st">'PACF'</span>, <span class="fl">0.95</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="main_quarto_files/figure-html/cell-17-output-1.png" width="590" height="431"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="17">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>autocorr(data[ <span class="st">'Diff'</span> ], <span class="st">'ACF'</span>, <span class="fl">0.95</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="main_quarto_files/figure-html/cell-18-output-1.png" width="582" height="431"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="18">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>autocorr(train[ <span class="st">'Diff'</span> ], <span class="st">'ACF'</span>, <span class="fl">0.95</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="main_quarto_files/figure-html/cell-19-output-1.png" width="582" height="431"></p>
+</div>
+</div>
+<p>There is some tendency to move towards zero over time in both PACF and ACF, indicating AR and MA processes are likely to be able to explain the underlying air passenger volume series. There are several spikes and drops outside of the 95% confidence interval bounds: using training data, PACF visibly exceeds bounds at lags 8, 10 and 12 and ACF visibly exceeds bounds at lags 4, 8 and 12. Therefore, it can be expected that the components might follow p = 8/10/12 AR and q = 4/8/12 MA processes.</p>
+<p>The authors of the paper, however, choose lower values for p and q, ending up with an ARIMA(2,1,2) model. This is likely chosen in order to maintain explainability and is supported by: - Maximum Likelihood Estimation results which maximise the probability of obtaining the observed data - Favourable AIC and BIC information criteria</p>
+</section>
+<section id="arima-model" class="level2">
+<h2 class="anchored" data-anchor-id="arima-model">ARIMA Model</h2>
+<p>With the ARIMA inputs determined, we can train the model and predict the time series between 1958-1960.</p>
+<div class="cell" data-execution_count="19">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> arima_run(data_input, order_selection, print_output, return_model):</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>    arima_out <span class="op">=</span> ARIMA(data_input, order<span class="op">=</span>order_selection)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>    arima_out_res <span class="op">=</span> arima_out.fit()</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> print_output:</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(arima_out_res.summary())</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    arima_out_pred <span class="op">=</span> arima_out_res.forecast(<span class="dv">36</span>)</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    full <span class="op">=</span> pd.concat([data_input, arima_out_pred])    </span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> print_output:</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>        plt.plot(full)</span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>        plt.title(<span class="st">'ARIMA '</span> <span class="op">+</span> <span class="bu">str</span>(order_selection))</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>        plt.show()</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> return_model:</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> full, arima_out_res</span>
+<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> full</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><strong>CALCULATE AIC AND BIC INFORMATION CRITERIA HERE</strong></p>
+<div class="cell" data-execution_count="20">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>full212, full212_model <span class="op">=</span> arima_run(train[<span class="st">'Diff'</span>], (<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">2</span>), <span class="va">True</span>, <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                               SARIMAX Results                                
+==============================================================================
+Dep. Variable:                   Diff   No. Observations:                  108
+Model:                 ARIMA(2, 1, 2)   Log Likelihood                -492.175
+Date:                Sat, 17 Jun 2023   AIC                            994.351
+Time:                        21:12:22   BIC                           1007.715
+Sample:                             0   HQIC                           999.768
+                                - 108                                         
+Covariance Type:                  opg                                         
+==============================================================================
+                 coef    std err          z      P&gt;|z|      [0.025      0.975]
+------------------------------------------------------------------------------
+ar.L1         -0.5081      0.128     -3.975      0.000      -0.759      -0.258
+ar.L2          0.0939      0.100      0.939      0.348      -0.102       0.290
+ma.L1         -0.0698     19.930     -0.004      0.997     -39.131      38.992
+ma.L2         -0.9301     18.532     -0.050      0.960     -37.253      35.392
+sigma2       553.6299   1.11e+04      0.050      0.960   -2.11e+04    2.22e+04
+===================================================================================
+Ljung-Box (L1) (Q):                   0.00   Jarque-Bera (JB):                 1.49
+Prob(Q):                              0.95   Prob(JB):                         0.47
+Heteroskedasticity (H):               4.69   Skew:                             0.09
+Prob(H) (two-sided):                  0.00   Kurtosis:                         2.45
+===================================================================================
+
+Warnings:
+[1] Covariance matrix calculated using the outer product of gradients (complex-step).</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>C:\Users\afost\Documents\UW\Y1\S2\Reproducible Research\Repro2023\venv\Lib\site-packages\statsmodels\base\model.py:607: ConvergenceWarning: Maximum Likelihood optimization failed to converge. Check mle_retvals
+  warnings.warn("Maximum Likelihood optimization failed to "</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="main_quarto_files/figure-html/cell-21-output-3.png" width="577" height="431"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="21">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a>full210, full210_model <span class="op">=</span> arima_run(train[<span class="st">'Diff'</span>], (<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">0</span>), <span class="va">False</span>, <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="22">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>full012, full012_model <span class="op">=</span> arima_run(train[<span class="st">'Diff'</span>], (<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">2</span>), <span class="va">False</span>, <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="23">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>full212_series <span class="op">=</span> []</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a>val <span class="op">=</span> data[<span class="st">'Count'</span>][<span class="dv">0</span>]</span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> full212:</span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a>    val <span class="op">+=</span> i</span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a>    full212_series.append(val)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="24">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>plt.plot(data[<span class="st">'Count'</span>], label <span class="op">=</span> <span class="st">'Observed'</span>)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>plt.plot(full212_series, label <span class="op">=</span> <span class="st">'Predicted'</span>)</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Air Passenger Volume Assuming ARIMA(2,1,2)'</span>)</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="main_quarto_files/figure-html/cell-25-output-1.png" width="575" height="431"></p>
+</div>
+</div>
+<p>Each of the ARIMAs chosen by the authors produced a poor fit in this exercise. The least concerning out of the three models was ARIMA(2,1,2) but still could not reproduce the visualised prediction in the paper. Whilst it increased the series over time with the long-term trend accurately, its variability diffused too quickly and it ignored the seasonality.</p>
+<section id="calculating-training-errors-and-comparison-with-rms-in-paper" class="level3">
+<h3 class="anchored" data-anchor-id="calculating-training-errors-and-comparison-with-rms-in-paper">Calculating training errors and comparison with RMS in paper</h3>
+<p>Below we have calculated training errors similarly to ones calculated by the authors of the original paper. As we can see, we were unable to replicate the results using ARIMA model.</p>
+<div class="cell" data-execution_count="25">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_i <span class="kw">in</span> [</span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"ARIMA (2,1,2)"</span>, full212_model, <span class="fl">1.5023</span>),</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"ARIMA (2,1,0)"</span>, full210_model, <span class="fl">1.4721</span>),</span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"ARIMA (0,1,2)"</span>, full012_model, <span class="fl">1.0292</span>)</span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a>]:</span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>model_i[<span class="dv">0</span>]<span class="sc">}</span><span class="ss">: RMSE=</span><span class="sc">{</span><span class="bu">round</span>(mean_squared_error(train[<span class="st">'Diff'</span>], model_i[<span class="dv">1</span>].predict(), squared<span class="op">=</span><span class="va">False</span>),<span class="dv">4</span>)<span class="sc">}</span><span class="ss"> (RMSE in paper = </span><span class="sc">{</span>model_i[<span class="dv">2</span>]<span class="sc">}</span><span class="ss">)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>ARIMA (2,1,2): RMSE=23.6579 (RMSE in paper = 1.5023)
+ARIMA (2,1,0): RMSE=28.6051 (RMSE in paper = 1.4721)
+ARIMA (0,1,2): RMSE=24.3046 (RMSE in paper = 1.0292)</code></pre>
+</div>
+</div>
+<p>In order to improve the forecast, more lags should be considered - these were significant in the PACF and ACF after all. In addition, modifying the functional form to a SARIMA model would better adapt to the data due to the seasonality in air passenger volumes. We have expanded on the paper by developing an alternative model which aims to reproduce the forecast of the authors more accurately and produce significantly better fit to the data.</p>
+</section>
+</section>
+<section id="sarima" class="level2">
+<h2 class="anchored" data-anchor-id="sarima">SARIMA</h2>
+<p>Using SARIMA instead of ARIMA for forecasting the AirPassengers dataset is better because SARIMA takes into account the seasonal patterns present in the data. The AirPassengers dataset shows regular peaks and troughs at specific intervals. SARIMA incorporates these seasonal components, along with autoregressive and moving average components, to capture the complex dynamics of the dataset more accurately. This results in improved predictions, especially when dealing with data that has clear seasonality like air passenger traffic. In summary, SARIMA is a preferable choice over ARIMA for forecasting the AirPassengers dataset due to its ability to handle seasonal patterns.</p>
+<section id="time-series-decomposition" class="level3">
+<h3 class="anchored" data-anchor-id="time-series-decomposition">Time series decomposition</h3>
+<div class="cell" data-execution_count="26">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>result <span class="op">=</span> seasonal_decompose(data[<span class="st">'Count'</span>], period<span class="op">=</span><span class="dv">12</span>, model<span class="op">=</span><span class="st">'additive'</span>)</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>result.plot()</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="main_quarto_files/figure-html/cell-27-output-1.png" width="661" height="470"></p>
+</div>
+</div>
+<p>Based on the plots above, we can observe that there are definitely seasonal component. Hence, it would be a good idea to test SARIMA model that probably would be able to replicate the paper’s results.</p>
+<p>Let’s assume that authors forgot to describe that they use SARIMA model. So, we will try the following SARIMA models: SARIMA (2,1,2)(0,1,0,12), SARIMA (0,1,2)(0,1,0,12), SARIMA (2,1,0)(0,1,0,12).</p>
+<div class="cell" data-execution_count="27">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> run_sarima_model(order,seasonal_order, forecast_horizon<span class="op">=</span><span class="dv">36</span>, print_summary<span class="op">=</span><span class="va">False</span>, print_plot<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>    mod <span class="op">=</span> sm.tsa.statespace.SARIMAX(data[<span class="st">'Count'</span>][:<span class="op">-</span>forecast_horizon], trend<span class="op">=</span><span class="st">'c'</span>, order<span class="op">=</span>order, seasonal_order<span class="op">=</span>seasonal_order)</span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>    sarima_model <span class="op">=</span> mod.fit()</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> print_summary:</span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(sarima_model.summary())</span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>    sarima_pred <span class="op">=</span> sarima_model.forecast(forecast_horizon)</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> print_plot:</span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>        plt.plot(data[<span class="st">'Count'</span>], label <span class="op">=</span> <span class="st">'Observed'</span>)</span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>        plt.plot(pd.concat([data[<span class="st">'Count'</span>][:<span class="op">-</span>forecast_horizon],sarima_pred]), label <span class="op">=</span> <span class="st">'Predicted'</span>)</span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a>        plt.title(<span class="st">'Air Passenger Volume'</span>)</span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>        plt.show()</span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> sarima_model, sarima_pred</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<div class="cell" data-execution_count="28">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>sarima212_010_12, sarima212_010_12_pred <span class="op">=</span> run_sarima_model((<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">2</span>), (<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">12</span>), print_plot <span class="op">=</span> <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="main_quarto_files/figure-html/cell-29-output-1.png" width="575" height="431"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="29">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>sarima210_110_12, sarima210_110_12_pred <span class="op">=</span> run_sarima_model((<span class="dv">2</span>,<span class="dv">1</span>,<span class="dv">0</span>), (<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">12</span>), print_plot <span class="op">=</span> <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="main_quarto_files/figure-html/cell-30-output-1.png" width="575" height="431"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="30">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb38-1"><a href="#cb38-1" aria-hidden="true" tabindex="-1"></a>sarima012_110_12, sarima012_110_12_pred <span class="op">=</span> run_sarima_model((<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">2</span>), (<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">0</span>,<span class="dv">12</span>), print_plot <span class="op">=</span> <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<p><img src="main_quarto_files/figure-html/cell-31-output-1.png" width="575" height="431"></p>
+</div>
+</div>
+<p>As we can see, we managed to get predictions that take into account seasonal component and it is getting us closer to replicating the original results.</p>
+<p>Let’s calculate training errors again.</p>
+<div class="cell" data-execution_count="31">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> model_i <span class="kw">in</span> [</span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"SARIMA (2,1,2) (0,1,0,12)"</span>, sarima212_010_12, <span class="fl">1.5023</span>),</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"SARIMA (2,1,0) (0,1,0,12)"</span>, sarima210_110_12, <span class="fl">1.4721</span>),</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"SARIMA (0,1,2) (0,1,0,12)"</span>, sarima012_110_12, <span class="fl">1.0292</span>)</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>]:</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f"</span><span class="sc">{</span>model_i[<span class="dv">0</span>]<span class="sc">}</span><span class="ss">: RMSE=</span><span class="sc">{</span><span class="bu">round</span>(mean_squared_error(data[<span class="st">'Count'</span>][:<span class="op">-</span><span class="dv">36</span>], model_i[<span class="dv">1</span>].predict(), squared<span class="op">=</span><span class="va">False</span>),<span class="dv">4</span>)<span class="sc">}</span><span class="ss"> (RMSE in paper = </span><span class="sc">{</span>model_i[<span class="dv">2</span>]<span class="sc">}</span><span class="ss">)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>SARIMA (2,1,2) (0,1,0,12): RMSE=15.379 (RMSE in paper = 1.5023)
+SARIMA (2,1,0) (0,1,0,12): RMSE=15.6072 (RMSE in paper = 1.4721)
+SARIMA (0,1,2) (0,1,0,12): RMSE=15.625 (RMSE in paper = 1.0292)</code></pre>
+</div>
+</div>
+<p>Comparing to ARIMA models, we got much lower RMSE metric for SARIMA models. Unfortunately, we are still too far from the results presented in the paper.</p>
+</section>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const disableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'prefetch';
+    }
+  }
+  const enableStylesheet = (stylesheets) => {
+    for (let i=0; i < stylesheets.length; i++) {
+      const stylesheet = stylesheets[i];
+      stylesheet.rel = 'stylesheet';
+    }
+  }
+  const manageTransitions = (selector, allowTransitions) => {
+    const els = window.document.querySelectorAll(selector);
+    for (let i=0; i < els.length; i++) {
+      const el = els[i];
+      if (allowTransitions) {
+        el.classList.remove('notransition');
+      } else {
+        el.classList.add('notransition');
+      }
+    }
+  }
+  const toggleColorMode = (alternate) => {
+    // Switch the stylesheets
+    const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+    manageTransitions('#quarto-margin-sidebar .nav-link', false);
+    if (alternate) {
+      enableStylesheet(alternateStylesheets);
+      for (const sheetNode of alternateStylesheets) {
+        if (sheetNode.id === "quarto-bootstrap") {
+          toggleBodyColorMode(sheetNode);
+        }
+      }
+    } else {
+      disableStylesheet(alternateStylesheets);
+      toggleBodyColorPrimary();
+    }
+    manageTransitions('#quarto-margin-sidebar .nav-link', true);
+    // Switch the toggles
+    const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+    for (let i=0; i < toggles.length; i++) {
+      const toggle = toggles[i];
+      if (toggle) {
+        if (alternate) {
+          toggle.classList.add("alternate");     
+        } else {
+          toggle.classList.remove("alternate");
+        }
+      }
+    }
+    // Hack to workaround the fact that safari doesn't
+    // properly recolor the scrollbar when toggling (#1455)
+    if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+      manageTransitions("body", false);
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+        manageTransitions("body", true);
+      }, 40);  
+    }
+  }
+  const isFileUrl = () => { 
+    return window.location.protocol === 'file:';
+  }
+  const hasAlternateSentinel = () => {  
+    let styleSentinel = getColorSchemeSentinel();
+    if (styleSentinel !== null) {
+      return styleSentinel === "alternate";
+    } else {
+      return false;
+    }
+  }
+  const setStyleSentinel = (alternate) => {
+    const value = alternate ? "alternate" : "default";
+    if (!isFileUrl()) {
+      window.localStorage.setItem("quarto-color-scheme", value);
+    } else {
+      localAlternateSentinel = value;
+    }
+  }
+  const getColorSchemeSentinel = () => {
+    if (!isFileUrl()) {
+      const storageValue = window.localStorage.getItem("quarto-color-scheme");
+      return storageValue != null ? storageValue : localAlternateSentinel;
+    } else {
+      return localAlternateSentinel;
+    }
+  }
+  let localAlternateSentinel = 'default';
+  // Dark / light mode switch
+  window.quartoToggleColorScheme = () => {
+    // Read the current dark / light value 
+    let toAlternate = !hasAlternateSentinel();
+    toggleColorMode(toAlternate);
+    setStyleSentinel(toAlternate);
+  };
+  // Ensure there is a toggle, if there isn't float one in the top right
+  if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+    const a = window.document.createElement('a');
+    a.classList.add('top-right');
+    a.classList.add('quarto-color-scheme-toggle');
+    a.href = "";
+    a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+    const i = window.document.createElement("i");
+    i.classList.add('bi');
+    a.appendChild(i);
+    window.document.body.appendChild(a);
+  }
+  // Switch to dark mode if need be
+  if (hasAlternateSentinel()) {
+    toggleColorMode(true);
+  } else {
+    toggleColorMode(false);
+  }
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+<script src="main_quarto_files/libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

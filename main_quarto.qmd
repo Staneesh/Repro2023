@@ -1,0 +1,335 @@
+---
+title: 'Reproducible Research Project: Air Passengers Occupancy Prediction'
+author: 'Adam Foster, Maciej Staniszewski, Illia Baranochnikov'
+format:
+  html:
+    code-fold: true
+    toc: true
+    toc-depth: 2
+    toc-expand: 1
+    toc-title: Contents
+    toc-location: body
+    smooth-scroll: true
+    theme:
+      light: flatly
+      dark: darkly
+title-block-banner: true
+jupyter: python3
+---
+
+# Importing Libraries
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+import datetime
+from scipy.stats import norm
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.seasonal import seasonal_decompose
+from sklearn.metrics import mean_squared_error
+```
+
+# Loading the Dataset
+
+Air passenger data is downloaded to the `/data` subdirectory of the root project folder. We will use `pandas` to create a data frame with this data. 
+
+```{python}
+data = pd.read_csv('data/AirPassengers.xls', index_col=0)
+data.columns = [ 'Count' ] # Renaming `#Passengers` -> `Count` for convenience
+data.head()
+```
+
+```{python}
+data.tail()
+```
+
+We see that the dataset looks relatively simple. It contains monthly data about the number of air passengers from 1949 to 1960. Let's see more detailed description of the data using `pandas.describe()`:
+
+```{python}
+data.describe()
+```
+
+Having taken a better look we can note down a couple observations:
+ - There are 144 observations
+ - The distribution is centered around 280
+ - The distribution is skewed towards larger values jugding from **quartiles** and **min-max** range
+
+Let's import libraries required for performing the analysis and forecasting outlined in the paper.
+
+# Time Series Modelling - ARIMA
+
+We will fit a simple **A**uto**R**egressive **I**ntegrate **M**oving **A**verage, or **ARIMA**, model to our time series of air passengers.
+
+First, we should plot the time series and it's first difference, as is customary:
+
+```{python}
+# First difference is computed by diffing values with shifted values. We then fill NAs with 0s to
+# handle the first difference.
+data[ 'Diff' ] = (data[ 'Count' ] - data[ 'Count' ].shift(1)).fillna(0)
+data.head()
+```
+
+```{python}
+data.plot(figsize=(19, 10), subplots=True)
+```
+
+## Visual Inspection
+
+At the first glance we see that the data does not contain missing values. It's a discrete series, because we sample our values monthly. It appears seasonal, which is in line with the meaning of the values in the data frame - they reflect the number of air passengers, so it's natural that we observe more passengers during, for example, summer.
+
+## Train-Test Split
+There is no clear mention of the approach used to split the data into training and test sets. Judging by the final forecast visualisation, 1958 appeared to be the cutoff point between training and test sets. After this point there was an additional ARIMA curve until the end of the series used to forecast air passenger volumes in comparison with the actual time series.
+
+We will therefore set 1949-1957 as the training set and 1958-1960 as the test set.
+
+```{python}
+data = data.reset_index()
+data['Date'] = data.apply(lambda x: datetime.datetime.strptime(x['Month'], '%Y-%m'), axis = 1).dt.date
+data = data.drop(['Month'], axis = 1)
+```
+
+```{python}
+train = data.loc[data['Date'] < datetime.date(1958, 1, 1)]
+train.tail()
+```
+
+```{python}
+test = data.loc[data['Date'] >= datetime.date(1958, 1, 1)]
+test.head()
+```
+
+## Stationarity
+
+We should check if the series is stationary. As per visual inspection we see that it should not be. We will use the <ins>**A**ugumented **D**ickey-**F**uller</ins> (**ADF**) test ([*Wikipedia* link](https://en.wikipedia.org/wiki/Augmented_Dickey%E2%80%93Fuller_test)), which is a part of the `statsmodels` library.
+
+```{python}
+# Small helper function for performing the DF test on a time series. 
+def ADF(series):
+    (adf_test, adf_p) = sm.tsa.stattools.adfuller(series)[:2]
+    print(f"ADF Test Statistic = {adf_test}, p-value = {adf_p}")
+
+ADF(train[ 'Count' ])
+```
+
+Because the *p-value* is outside the critical region, we **fail to reject the null** hypothesis about the stationarity of the series. This is in line with our initial expectations. We will assume that the series is non-stationary.
+
+The authors of the paper arrive at a different test statistic.
+
+They actually obtain the following test statistic which assumes the use of the entire time series (train + test).
+
+```{python}
+# Small helper function for performing the DF test on a time series. 
+def ADF(series):
+    (adf_test, adf_p) = sm.tsa.stattools.adfuller(series)[:2]
+    print(f"ADF Test Statistic = {adf_test}, p-value = {adf_p}")
+
+ADF(data[ 'Count' ])
+```
+
+For completeness, let's also check the stationarity of the series of first differences:
+
+```{python}
+ADF(train[ 'Diff' ])
+```
+
+The p-value is still high enough for the null hypothesis not to be rejected at 10% confidence level.
+
+```{python}
+ADF(data[ 'Diff' ])
+```
+
+Extending the test to the entire series again, we **reject the null** at the 95% confidence level, better than the 0.07 p-value reported by the authors. This indicates the first differences are stationary and the the underlying series is I(1).
+
+The authors of the paper describe that a *logarithmic transformation* is another useful option in removing the trend and fluctuations in the series. Calculating the first difference was sufficient though.
+
+The steps that were taken by the authors include differencing and removing seasonality. They **did not** mention how was the seasonality removed - we can only guess here and perform our own estimations. 
+
+With the process being classified as I(1), the authors proceeded to determine the order of AR and MA models for the complete ARIMA model using partial autocorrelation functions (PACF) and autocorrelation functions (ACF), respectively.
+
+## PACF and ACF
+
+Running PACF and ACF on the first differences on both training and overall datasets is perfomed and depicted below. The shapes of both PACF and ACF curves follow those produced by the authors with a closer match for the training set. A similar set of lags are statistically significant, as those in the paper.
+
+```{python}
+def autocorr(data_input, func_type, ci):
+    if(func_type == 'PACF'):
+        func_data = sm.tsa.stattools.pacf(data_input)
+    elif(func_type == 'ACF'):
+        func_data = sm.tsa.stattools.acf(data_input)
+    
+    t = len(data_input)
+    norminv = norm.ppf(ci + (1 - ci) / 2)
+    bound_upper = norminv / t**0.5
+    bound_lower = - norminv / t**0.5
+    curve_bound_upper = [bound_upper for i in range(0,len(func_data))]
+    curve_bound_lower = [bound_lower for i in range(0,len(func_data))]
+    
+    plt.plot(func_data, label = func_type)
+    plt.plot(curve_bound_upper, 'k--', label = 'Upper Bound')
+    plt.plot(curve_bound_lower, 'k--', label = 'Lower Bound')
+    plt.title(func_type)
+    plt.show()
+```
+
+```{python}
+autocorr(data[ 'Diff' ], 'PACF', 0.95)
+```
+
+```{python}
+autocorr(train[ 'Diff' ], 'PACF', 0.95)
+```
+
+```{python}
+autocorr(data[ 'Diff' ], 'ACF', 0.95)
+```
+
+```{python}
+autocorr(train[ 'Diff' ], 'ACF', 0.95)
+```
+
+There is some tendency to move towards zero over time in both PACF and ACF, indicating AR and MA processes are likely to be able to explain the underlying air passenger volume series. There are several spikes and drops outside of the 95% confidence interval bounds: using training data, PACF visibly exceeds bounds at lags 8, 10 and 12 and ACF visibly exceeds bounds at lags 4, 8 and 12. Therefore, it can be expected that the components might follow p = 8/10/12 AR and q = 4/8/12 MA processes.
+
+The authors of the paper, however, choose lower values for p and q, ending up with an ARIMA(2,1,2) model. This is likely chosen in order to maintain explainability and is supported by:
+- Maximum Likelihood Estimation results which maximise the probability of obtaining the observed data
+- Favourable AIC and BIC information criteria
+
+## ARIMA Model
+With the ARIMA inputs determined, we can train the model and predict the time series between 1958-1960.
+
+```{python}
+def arima_run(data_input, order_selection, print_output, return_model):
+    arima_out = ARIMA(data_input, order=order_selection)
+    arima_out_res = arima_out.fit()
+    if print_output:
+        print(arima_out_res.summary())
+        
+    arima_out_pred = arima_out_res.forecast(36)
+    full = pd.concat([data_input, arima_out_pred])    
+    if print_output:
+        plt.plot(full)
+        plt.title('ARIMA ' + str(order_selection))
+        plt.show()
+    
+    if return_model:
+        return full, arima_out_res
+    else:
+        return full
+```
+
+**CALCULATE AIC AND BIC INFORMATION CRITERIA HERE**
+
+```{python}
+full212, full212_model = arima_run(train['Diff'], (2,1,2), True, True)
+```
+
+```{python}
+full210, full210_model = arima_run(train['Diff'], (2,1,0), False, True)
+```
+
+```{python}
+full012, full012_model = arima_run(train['Diff'], (0,1,2), False, True)
+```
+
+```{python}
+full212_series = []
+val = data['Count'][0]
+
+for i in full212:
+    val += i
+    full212_series.append(val)
+```
+
+```{python}
+plt.plot(data['Count'], label = 'Observed')
+plt.plot(full212_series, label = 'Predicted')
+plt.title('Air Passenger Volume Assuming ARIMA(2,1,2)')
+plt.show()
+```
+
+Each of the ARIMAs chosen by the authors produced a poor fit in this exercise. The least concerning out of the three models was ARIMA(2,1,2) but still could not reproduce the visualised prediction in the paper. Whilst it increased the series over time with the long-term trend accurately, its variability diffused too quickly and it ignored the seasonality.
+
+### Calculating training errors and comparison with RMS in paper
+
+Below we have calculated training errors similarly to ones calculated by the authors of the original paper. As we can see, we were unable to replicate the results using ARIMA model.
+
+```{python}
+for model_i in [
+    ("ARIMA (2,1,2)", full212_model, 1.5023),
+    ("ARIMA (2,1,0)", full210_model, 1.4721),
+    ("ARIMA (0,1,2)", full012_model, 1.0292)
+]:
+    print(f"{model_i[0]}: RMSE={round(mean_squared_error(train['Diff'], model_i[1].predict(), squared=False),4)} (RMSE in paper = {model_i[2]})")
+    
+```
+
+In order to improve the forecast, more lags should be considered - these were significant in the PACF and ACF after all. In addition, modifying the functional form to a SARIMA model would better adapt to the data due to the seasonality in air passenger volumes. We have expanded on the paper by developing an alternative model which aims to reproduce the forecast of the authors more accurately and produce significantly better fit to the data.
+
+## SARIMA
+
+Using SARIMA instead of ARIMA for forecasting the AirPassengers dataset is better because SARIMA takes into account the seasonal patterns present in the data. The AirPassengers dataset shows regular peaks and troughs at specific intervals. SARIMA incorporates these seasonal components, along with autoregressive and moving average components, to capture the complex dynamics of the dataset more accurately. This results in improved predictions, especially when dealing with data that has clear seasonality like air passenger traffic. In summary, SARIMA is a preferable choice over ARIMA for forecasting the AirPassengers dataset due to its ability to handle seasonal patterns.
+
+### Time series decomposition
+
+```{python}
+result = seasonal_decompose(data['Count'], period=12, model='additive')
+result.plot()
+plt.show()
+```
+
+Based on the plots above, we can observe that there are definitely seasonal component. Hence, it would be a good idea to test SARIMA model that probably would be able to replicate the paper's results.
+
+Let's assume that authors forgot to describe that they use SARIMA model. So, we will try the following SARIMA models: SARIMA (2,1,2)(0,1,0,12), SARIMA (0,1,2)(0,1,0,12), SARIMA (2,1,0)(0,1,0,12).
+
+```{python}
+def run_sarima_model(order,seasonal_order, forecast_horizon=36, print_summary=False, print_plot=False):
+    mod = sm.tsa.statespace.SARIMAX(data['Count'][:-forecast_horizon], trend='c', order=order, seasonal_order=seasonal_order)
+    sarima_model = mod.fit()
+    if print_summary:
+        print(sarima_model.summary())
+
+    sarima_pred = sarima_model.forecast(forecast_horizon)
+    
+    if print_plot:
+        plt.plot(data['Count'], label = 'Observed')
+        plt.plot(pd.concat([data['Count'][:-forecast_horizon],sarima_pred]), label = 'Predicted')
+        plt.title('Air Passenger Volume')
+        plt.show()
+    
+    return sarima_model, sarima_pred
+```
+
+```{python}
+sarima212_010_12, sarima212_010_12_pred = run_sarima_model((2,1,2), (0,1,0,12), print_plot = True)
+```
+
+```{python}
+sarima210_110_12, sarima210_110_12_pred = run_sarima_model((2,1,0), (0,1,0,12), print_plot = True)
+```
+
+```{python}
+sarima012_110_12, sarima012_110_12_pred = run_sarima_model((0,1,2), (0,1,0,12), print_plot = True)
+```
+
+As we can see, we managed to get predictions that take into account seasonal component and it is getting us closer to replicating the original results.
+
+Let's calculate training errors again.
+
+```{python}
+for model_i in [
+    ("SARIMA (2,1,2) (0,1,0,12)", sarima212_010_12, 1.5023),
+    ("SARIMA (2,1,0) (0,1,0,12)", sarima210_110_12, 1.4721),
+    ("SARIMA (0,1,2) (0,1,0,12)", sarima012_110_12, 1.0292)
+]:
+    print(f"{model_i[0]}: RMSE={round(mean_squared_error(data['Count'][:-36], model_i[1].predict(), squared=False),4)} (RMSE in paper = {model_i[2]})")
+    
+```
+
+Comparing to ARIMA models, we got much lower RMSE metric for SARIMA models. Unfortunately, we are still too far from the results presented in the paper.
+
+
+
+
+
+
+
