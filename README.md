@@ -51,7 +51,7 @@ Please make sure you have all usual dependencies installed on your system. Most 
 4. Install dependencies from the requirements file: `pip install -r requirements.txt`
 5. You're good to open the Jupyter Notebook IDE of your choice. Be sure to use select Python version from inside the `venv` you just created when prompted by `ipykernel` package.
 
-## Running the Code
+## Quarto Report
 
 Whilst viewing `main.ipynb` is an acceptable way of viewing the reproduced output, note that an enhanced and visually appealing report has been created using Quarto and is saved as `main.html`. The initial raw block embedded in `main.ipynb` contains the YAML details for report processing.
 
