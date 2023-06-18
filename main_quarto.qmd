@@ -382,6 +382,6 @@ for model_i in [
     
 ```
 
-As we can see, we managed to get results that are much lower than those calculated based on the original time series. Based on this, we cannot reject our hypothesis that the metrics in the paper were calculated based on the transformed time series. In our case we got the results that are at least two times lower than the results provided by the authors. It is probable that authors performed additional transformation that were not clearly described in the paper, so we are not able to replicate these results.
+As we can see, we managed to get results that are much lower than those calculated based on the original time series. Based on this, we cannot reject our hypothesis that the metrics in the paper were calculated based on the transformed time series. In our case we achieved impressive RMSE results that are at least half of those provided by the authors. It is probable that authors performed additional transformations that were not clearly described in the paper, so we are not able to replicate these results exactly. Nevertheless, we have reproduced most of the analysis and applied assumptions where applicable and we have developed a better SARIMA model to forecast air passenger volumes with greater accuracy.
 
 
