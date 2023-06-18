@@ -28,6 +28,7 @@ from scipy.stats import norm
 from statsmodels.tsa.arima.model import ARIMA
 from statsmodels.tsa.seasonal import seasonal_decompose
 from sklearn.metrics import mean_squared_error
+import numpy as np
 ```
 
 # Loading the Dataset
@@ -217,18 +218,32 @@ def arima_run(data_input, order_selection, print_output, return_model):
         return full
 ```
 
-**CALCULATE AIC AND BIC INFORMATION CRITERIA HERE**
-
 ```{python}
 full212, full212_model = arima_run(train['Diff'], (2,1,2), True, True)
 ```
 
 ```{python}
-full210, full210_model = arima_run(train['Diff'], (2,1,0), False, True)
+full210, full210_model = arima_run(train['Diff'], (2,1,0), True, True)
 ```
 
 ```{python}
-full012, full012_model = arima_run(train['Diff'], (0,1,2), False, True)
+full012, full012_model = arima_run(train['Diff'], (0,1,2), True, True)
+```
+
+Based on the calculated **AIC** and **BIC** metrics, we can conclude that the ARIMA(0,1,2) and ARIMA(2,1,2) models are the best choice as the have the lowest metrics.
+
+```{python}
+full012_series = []
+val = data['Count'][0]
+
+for i in full012:
+    val += i
+    full012_series.append(val)
+    
+plt.plot(data['Count'], label = 'Observed')
+plt.plot(full012_series, label = 'Predicted')
+plt.title('Air Passenger Volume Assuming ARIMA(0,1,2)')
+plt.show()
 ```
 
 ```{python}
@@ -238,16 +253,14 @@ val = data['Count'][0]
 for i in full212:
     val += i
     full212_series.append(val)
-```
-
-```{python}
+    
 plt.plot(data['Count'], label = 'Observed')
 plt.plot(full212_series, label = 'Predicted')
 plt.title('Air Passenger Volume Assuming ARIMA(2,1,2)')
 plt.show()
 ```
 
-Each of the ARIMAs chosen by the authors produced a poor fit in this exercise. The least concerning out of the three models was ARIMA(2,1,2) but still could not reproduce the visualised prediction in the paper. Whilst it increased the series over time with the long-term trend accurately, its variability diffused too quickly and it ignored the seasonality.
+Each of the ARIMAs chosen by the authors produced a poor fit in this exercise. The least concerning out of the three models were ARIMA(2,1,2) and ARIMA(0,1,2) but still could not reproduce the visualised prediction in the paper. Whilst it increased the series over time with the long-term trend accurately, its variability diffused too quickly and it ignored the seasonality.
 
 ### Calculating training errors and comparison with RMS in paper
 
@@ -277,7 +290,7 @@ result.plot()
 plt.show()
 ```
 
-Based on the plots above, we can observe that there are definitely seasonal component. Hence, it would be a good idea to test SARIMA model that probably would be able to replicate the paper's results.
+Based on the plots above, we can observe that the time series definitely has a seasonal component. Hence, it would be a good idea to test SARIMA model that probably would be able to replicate the paper's results.
 
 Let's assume that authors forgot to describe that they use SARIMA model. So, we will try the following SARIMA models: SARIMA (2,1,2)(0,1,0,12), SARIMA (0,1,2)(0,1,0,12), SARIMA (2,1,0)(0,1,0,12).
 
@@ -325,11 +338,50 @@ for model_i in [
     
 ```
 
-Comparing to ARIMA models, we got much lower RMSE metric for SARIMA models. Unfortunately, we are still too far from the results presented in the paper.
+Comparing to ARIMA models, we got much lower RMSE metric for SARIMA models. Unfortunately, we are still too far from the results presented in the paper. If we take a look at the plot above, we could assume that the results should be similar as our predictions in out-of-sample period look very similarly. There is a high chance that during the process of metrics calculation authors used the transformed time series and not the original one as it would be correctly to do as RMSE metric is very sensitive to such issues.
 
+Let's assume that authors calculated metrics based on the time series that was transformed by the **log-transform function**. We will build SARIMA models, but in this case we will use log-transformed time series.
 
+```{python}
+def run_log_sarima_model(order,seasonal_order, forecast_horizon=36, print_summary=False, print_plot=False):
+    mod = sm.tsa.statespace.SARIMAX(np.log(data['Count'][:-forecast_horizon]), trend='c', order=order, seasonal_order=seasonal_order)
+    sarima_model = mod.fit()
+    if print_summary:
+        print(sarima_model.summary())
 
+    sarima_pred = sarima_model.forecast(forecast_horizon)
+    
+    if print_plot:
+        plt.plot(np.log(data['Count']), label = 'Observed')
+        plt.plot(pd.concat([np.log(data['Count'][:-forecast_horizon]),sarima_pred]), label = 'Predicted')
+        plt.title('Air Passenger Volume')
+        plt.show()
+    
+    return sarima_model, sarima_pred
+```
 
+```{python}
+sarima212_010_12_log, sarima212_010_12_pred_log = run_log_sarima_model((2,1,2), (0,1,0,12), print_plot = True)
+```
 
+```{python}
+sarima210_110_12_log, sarima210_110_12_pred_log = run_log_sarima_model((2,1,0), (0,1,0,12), print_plot = True)
+```
+
+```{python}
+sarima012_110_12_log, sarima012_110_12_pred_log = run_log_sarima_model((0,1,2), (0,1,0,12), print_plot = True)
+```
+
+```{python}
+for model_i in [
+    ("SARIMA (2,1,2) (0,1,0,12)", sarima212_010_12_log, 1.5023),
+    ("SARIMA (2,1,0) (0,1,0,12)", sarima210_110_12_log, 1.4721),
+    ("SARIMA (0,1,2) (0,1,0,12)", sarima012_110_12_log, 1.0292)
+]:
+    print(f"{model_i[0]}: RMSE={round(mean_squared_error(np.log(data['Count'][:-36]), model_i[1].predict(), squared=False),4)} (RMSE in paper = {model_i[2]})")
+    
+```
+
+As we can see, we managed to get results that are much lower than those calculated based on the original time series. Based on this, we cannot reject our hypothesis that the metrics in the paper were calculated based on the transformed time series. In our case we got the results that are at least two times lower than the results provided by the authors. It is probable that authors performed additional transformation that were not clearly described in the paper, so we are not able to replicate these results.
 
 
