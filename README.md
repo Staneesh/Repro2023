@@ -37,9 +37,9 @@ The main list of tasks that we wanted to accomplish is outlined below. Two main 
 - [X] Forecasting 
 - [X] Plotting forecast results
 - [X] Documenting code
-- [ ] **Were the results replicated?**
-- [ ] Alternative model implementation + comparisons
-- [ ] **Were we able to improve the model from the paper?**
+- [X] **Were the results replicated?**
+- [X] Alternative model implementation + comparisons
+- [X] **Were we able to improve the model from the paper?**
 
 ## Running the Code
 
